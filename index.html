@@ -94,7 +94,18 @@ function safeRead(){try{const x=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[
 favorites=safeRead();
 function setStatus(msg){$('status').textContent=msg}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function renderType(){document.querySelectorAll('[data-type]').forEach(b=>b.classList.toggle('active',b.dataset.type===type));$('timelineCard').classList.toggle('hidden',!(type==='Video'||type==='Animación'));$('duration').disabled=!(type==='Video'||type==='Animación');$('motion').disabled=!(type==='Video'||type==='Animación')}
+
+function renderType(){
+  document.querySelectorAll('[data-type]').forEach(b=>{
+    b.classList.toggle('active',b.dataset.type===type);
+  });
+  $('timelineCard').classList.toggle(
+    'hidden', !(type==='Video'||type==='Animación')
+  );
+  $('duration').disabled=!(type==='Video'||type==='Animación');
+  $('motion').disabled=!(type==='Video'||type==='Animación');
+}
+
 function renderScenes(){
  const root=$('timeline');root.innerHTML='';
  if(!scenes.length){root.innerHTML='<p class="empty">Aún no hay escenas. Añade una para definir qué ocurre en cada momento.</p>';return}
