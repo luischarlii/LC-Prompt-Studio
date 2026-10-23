@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#102a43">
+<meta name="description" content="LC Prompt Studio: crea, organiza y copia prompts para imágenes, videos, animaciones y publicidad.">
+<title>LC Prompt Studio</title>
+<style>
+:root{--bg:#f3f7fb;--card:#fff;--ink:#102a43;--muted:#526579;--blue:#1769e0;--green:#12805c;--line:#d8e2ee;--soft:#eaf2ff;--danger:#b42318}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.45}
+header{background:linear-gradient(135deg,#102a43,#1769e0);color:#fff;padding:26px 16px 24px}header .wrap,main{max-width:980px;margin:auto}header h1{margin:0;font-size:clamp(1.7rem,5vw,2.4rem);letter-spacing:-.04em}header p{margin:7px 0 0;color:#e3edff}.brand{display:inline-flex;align-items:center;gap:8px;font-weight:800;letter-spacing:.04em;margin-bottom:8px}.brand-mark{display:grid;place-items:center;width:35px;height:35px;border-radius:11px;background:#fff;color:#1769e0;font-weight:900}
+main{padding:16px;display:grid;gap:16px}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 5px 18px #102a4308}.card h2{font-size:1.16rem;margin:0 0 14px}.card h3{font-size:1rem;margin:12px 0 8px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.field{display:flex;flex-direction:column;gap:6px;min-width:0}.field.full{grid-column:1/-1}label,.label{font-size:.9rem;font-weight:700}input,select,textarea{font:inherit;color:var(--ink);background:#fff;border:1px solid #c7d4e2;border-radius:10px;padding:11px 12px;width:100%;min-width:0}textarea{resize:vertical;min-height:88px}input:focus,select:focus,textarea:focus{outline:3px solid #1769e029;border-color:var(--blue)}.hint{font-size:.8rem;color:var(--muted);margin:0}.choices{display:flex;flex-wrap:wrap;gap:8px}.choice{display:flex;align-items:center;gap:7px;border:1px solid var(--line);padding:9px 11px;border-radius:11px;font-size:.88rem;cursor:pointer;background:#fff}.choice input{width:auto;margin:0;accent-color:var(--blue)}.tabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}.tab{border:1px solid var(--line);background:#fff;color:var(--ink);padding:9px 12px;border-radius:10px;font-weight:700;cursor:pointer}.tab.active{background:var(--soft);border-color:var(--blue);color:#124ca8}.actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:14px}button{font:inherit;cursor:pointer;border:0;border-radius:11px;padding:11px 14px;font-weight:750}.primary{background:var(--blue);color:#fff}.secondary{background:#e7eef7;color:var(--ink)}.green{background:var(--green);color:#fff}.danger{background:#fff0ef;color:var(--danger)}button:focus-visible{outline:3px solid #1769e05c;outline-offset:2px}.output{white-space:pre-wrap;overflow-wrap:anywhere;background:#0e1d2e;color:#e8f1ff;padding:15px;border-radius:12px;min-height:180px;font-size:.91rem}.status{min-height:1.3em;font-size:.85rem;color:var(--green);margin-top:8px}.preview{display:none;max-width:100%;max-height:240px;border-radius:12px;border:1px solid var(--line);margin-top:10px}.timeline{display:grid;gap:10px}.scene{border:1px solid var(--line);border-radius:12px;padding:12px;background:#f9fbfe}.scene-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}.scene-head strong{font-size:.9rem}.small{padding:7px 10px;font-size:.83rem}.fav-list{display:grid;gap:9px}.fav{border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;gap:7px}.fav-title{font-weight:800}.fav-meta{color:var(--muted);font-size:.8rem}.fav-actions{display:flex;flex-wrap:wrap;gap:7px}.empty{color:var(--muted);font-size:.9rem;padding:12px 0}.footer{text-align:center;color:var(--muted);font-size:.8rem;padding:0 16px 28px}.hidden{display:none!important}
+@media(max-width:640px){main{padding:12px}.card{padding:15px}.grid{grid-template-columns:1fr}.field.full{grid-column:auto}.actions button{flex:1 1 140px}header{padding:22px 16px}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><div class="brand"><span class="brand-mark">LC</span> LC CREATIVE TOOLS</div><h1>Prompt Studio</h1><p>Diseña prompts para imágenes, videos, personajes, animaciones y anuncios.</p></div></header>
+<main>
+<section class="card">
+<h2>1. Elige qué quieres crear</h2>
+<div class="tabs" id="typeTabs">
+<button class="tab active" data-type="Imagen">🖼️ Imagen</button><button class="tab" data-type="Video">🎬 Video</button><button class="tab" data-type="Animación">✨ Animación</button><button class="tab" data-type="Publicidad">📣 Publicidad</button>
+</div>
+<div class="grid">
+<div class="field"><label for="platform">IA o plataforma de destino</label><select id="platform"><option>Universal</option><option>ChatGPT</option><option>Midjourney</option><option>Seedream</option><option>Kling AI</option><option>Sora</option><option>CapCut AI</option><option>Runway</option><option>Gemini</option></select></div>
+<div class="field"><label for="language">Idioma del prompt</label><select id="language"><option>Español</option><option>Inglés</option><option>Bilingüe: español e inglés</option></select></div>
+<div class="field full"><label for="subject">Tema, personaje o producto *</label><textarea id="subject" placeholder="Ej.: un personaje mexicano con sombrero, una camioneta clásica, una botella de salsa..." required></textarea></div>
+<div class="field full"><label for="action">Acción o resultado deseado *</label><textarea id="action" placeholder="Ej.: el personaje mira a cámara, sonríe y levanta el pulgar; o el producto gira lentamente..." required></textarea></div>
+<div class="field full"><label for="scene">Escenario o fondo</label><input id="scene" placeholder="Ej.: una cantina mexicana al atardecer"></div>
+<div class="field"><label for="style">Estilo visual</label><select id="style"><option>Cinematográfico realista</option><option>Fotografía profesional</option><option>3D hiperrealista</option><option>Animación 3D estilo película</option><option>Anime</option><option>Terror cinematográfico</option><option>Fantasía épica</option><option>Publicidad comercial premium</option><option>Documental naturalista</option><option>Ilustración editorial</option></select></div>
+<div class="field"><label for="format">Formato</label><select id="format"><option>9:16 vertical — TikTok, Reels, Shorts</option><option>16:9 horizontal — YouTube</option><option>1:1 cuadrado — publicaciones</option><option>3:4 vertical</option><option>4:5 vertical — redes sociales</option><option>Personalizado</option></select></div>
+<div class="field hidden" id="customFormatWrap"><label for="customFormat">Formato personalizado</label><input id="customFormat" placeholder="Ej.: 2.39:1 panorámico"></div>
+<div class="field"><label for="shot">Encuadre o cámara</label><select id="shot"><option>Plano medio</option><option>Primer plano</option><option>Plano completo</option><option>Plano general</option><option>Toma aérea cinematográfica</option><option>Seguimiento dinámico de cámara</option><option>POV — punto de vista</option><option>Macro de producto</option><option>Cámara fija en trípode</option></select></div>
+<div class="field"><label for="light">Iluminación</label><select id="light"><option>Luz cinematográfica</option><option>Luz natural de día</option><option>Luz dorada de atardecer</option><option>Luz nocturna con neones</option><option>Iluminación dramática de alto contraste</option><option>Luz de estudio comercial</option><option>Luz suave y difusa</option></select></div>
+<div class="field"><label for="duration">Duración (para video/animación)</label><select id="duration"><option>5 segundos</option><option selected>10 segundos</option><option>15 segundos</option><option>30 segundos</option><option>60 segundos</option><option>Duración libre o según plataforma</option></select></div>
+<div class="field"><label for="motion">Movimiento</label><select id="motion"><option>Movimiento fluido y natural</option><option>Cámara lenta cinematográfica</option><option>Movimiento rápido y dinámico</option><option>Transformación visual progresiva</option><option>Cámara orbital alrededor del sujeto</option><option>Travelling de acercamiento</option><option>Paneo lateral suave</option><option>Movimiento de cámara en mano realista</option></select></div>
+<div class="field full"><label for="details">Detalles adicionales</label><textarea id="details" placeholder="Vestuario, expresiones, colores, accesorios, diálogo, música, texto en pantalla, emociones, marca, público objetivo..."></textarea></div>
+</div>
+</section>
+
+<section class="card">
+<h2>2. Imagen de referencia y continuidad</h2>
+<p class="hint">Selecciona una imagen para tenerla como referencia mientras preparas el prompt. La imagen se previsualiza en esta página; esta herramienta no la envía automáticamente a la plataforma de IA.</p>
+<div class="field" style="margin-top:12px"><label for="reference">Cargar imagen de referencia (opcional)</label><input id="reference" type="file" accept="image/*"><img id="referencePreview" class="preview" alt="Vista previa de la imagen de referencia"></div>
+<div class="choices" style="margin-top:14px">
+<label class="choice"><input id="keepFace" type="checkbox" checked> Conservar identidad y rostro</label>
+<label class="choice"><input id="keepClothes" type="checkbox" checked> Conservar vestuario y accesorios</label>
+<label class="choice"><input id="keepScene" type="checkbox"> Mantener el escenario de referencia</label>
+<label class="choice"><input id="noText" type="checkbox" checked> Evitar texto ilegible</label>
+</div>
+<div class="field" style="margin-top:13px"><label for="referenceNotes">Qué debe conservarse o cambiarse</label><textarea id="referenceNotes" placeholder="Ej.: conserva el rostro, sombrero y hebilla LC; cambia únicamente el fondo por una plaza mexicana."></textarea></div>
+</section>
+
+<section class="card" id="timelineCard">
+<h2>3. Guion por segundos (para videos)</h2>
+<p class="hint">Divide la acción en momentos para obtener un prompt más claro. Puedes añadir o quitar escenas.</p>
+<div id="timeline" class="timeline" style="margin-top:12px"></div>
+<div class="actions"><button class="secondary" id="addScene">＋ Añadir escena</button><button class="secondary" id="exampleScenes">Cargar ejemplo de 10 s</button></div>
+</section>
+
+<section class="card">
+<h2>4. Ajustes finales</h2>
+<div class="field"><label for="negative">Qué debe evitar la IA</label><textarea id="negative">Deformaciones, anatomía incorrecta, extremidades adicionales, rostro inconsistente, parpadeos, objetos que cambian de forma, desenfoque no deseado y texto ilegible.</textarea></div>
+<div class="field" style="margin-top:12px"><label for="extra">Instrucciones finales opcionales</label><textarea id="extra" placeholder="Ej.: sin marcas de agua, calidad alta, composición limpia, respetar las políticas de la plataforma..."></textarea></div>
+<div class="actions"><button class="primary" id="generate">✨ Generar prompt</button><button class="secondary" id="clear">Limpiar formulario</button></div>
+</section>
+
+<section class="card">
+<h2>5. Tu prompt listo para copiar</h2>
+<div id="output" class="output" aria-live="polite">Completa tu idea y pulsa “Generar prompt”. El resultado aparecerá aquí.</div>
+<div class="actions"><button class="green" id="copy">Copiar prompt</button><button class="secondary" id="save">☆ Guardar en favoritos</button><button class="secondary" id="download">Descargar .txt</button></div>
+<div id="status" class="status" role="status"></div>
+</section>
+
+<section class="card">
+<h2>6. Biblioteca de prompts favoritos</h2>
+<div class="field"><label for="searchFav">Buscar por nombre, categoría o contenido</label><input id="searchFav" type="search" placeholder="Escribe para filtrar tus prompts guardados..."></div>
+<p class="hint" style="margin-top:8px">Los favoritos se guardan en este navegador y dispositivo mediante almacenamiento local. No se sincronizan automáticamente con otros dispositivos.</p>
+<div id="favorites" class="fav-list" style="margin-top:12px"></div>
+<div class="actions"><button class="secondary" id="exportFav">Exportar biblioteca (.json)</button><button class="secondary" id="importFavButton">Importar biblioteca (.json)</button><input id="importFav" type="file" accept=".json,application/json" class="hidden"></div>
+</section>
+</main>
+<div class="footer">LC Prompt Studio · Herramienta independiente · Revisa las funciones y límites de tu generador de IA antes de usar el prompt.</div>
+
+<script>
+(function(){
+'use strict';
+const $=id=>document.getElementById(id);
+let type='Imagen', currentPrompt='', referenceData='', scenes=[], favorites=[];
+const STORAGE_KEY='lcPromptStudioFavorites_v1';
+const fields=['platform','language','subject','action','scene','style','format','customFormat','shot','light','duration','motion','details','referenceNotes','negative','extra'];
+function safeRead(){try{const x=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');return Array.isArray(x)?x:[]}catch(e){return[]}}
+favorites=safeRead();
+function setStatus(msg){$('status').textContent=msg}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function renderType(){document.querySelectorAll('[data-type]').forEach(b=>b.classList.toggle('active',b.dataset.type===type));$('timelineCard').classList.toggle('hidden',!(type==='Video'||type==='Animación'));$('duration').disabled=!(type==='Video'||type==='Animación');$('motion').disabled=!(type==='Video'||type==='Animación'))}
+function renderScenes(){
+ const root=$('timeline');root.innerHTML='';
+ if(!scenes.length){root.innerHTML='<p class="empty">Aún no hay escenas. Añade una para definir qué ocurre en cada momento.</p>';return}
+ scenes.forEach((s,i)=>{
+  const div=document.createElement('div');div.className='scene';
+  div.innerHTML=`<div class="scene-head"><strong>Escena ${i+1}</strong><button type="button" class="danger small" data-remove="${i}">Eliminar</button></div><div class="grid"><div class="field"><label>Inicio</label><input type="number" min="0" max="600" data-scene="${i}" data-key="start" value="${esc(s.start)}"></div><div class="field"><label>Fin</label><input type="number" min="1" max="600" data-scene="${i}" data-key="end" value="${esc(s.end)}"></div><div class="field full"><label>Acción visual</label><textarea data-scene="${i}" data-key="description" placeholder="Describe lo que ocurre en este tramo...">${esc(s.description)}</textarea></div><div class="field full"><label>Cámara o sonido (opcional)</label><input data-scene="${i}" data-key="camera" value="${esc(s.camera)}" placeholder="Ej.: acercamiento suave; sonido ambiente"></div></div>`;
+  root.appendChild(div);
+ });
+}
+$('timeline').addEventListener('input',e=>{const i=e.target.dataset.scene,k=e.target.dataset.key;if(i!==undefined&&k)scenes[Number(i)][k]=e.target.value});
+$('timeline').addEventListener('click',e=>{const i=e.target.dataset.remove;if(i!==undefined){scenes.splice(Number(i),1);renderScenes()}});
+$('addScene').addEventListener('click',()=>{const last=scenes.length?Number(scenes[scenes.length-1].end)||0:0;scenes.push({start:last,end:last+3,description:'',camera:''});renderScenes()});
+$('exampleScenes').addEventListener('click',()=>{scenes=[{start:0,end:3,description:'Presentar al personaje o producto; establecer el lugar y la atmósfera.',camera:'Plano medio, cámara estable'},{start:3,end:7,description:'Ejecutar la acción principal de forma clara y natural.',camera:'Movimiento suave siguiendo la acción'},{start:7,end:10,description:'Terminar con una pose o composición final clara; mantener el sujeto reconocible.',camera:'Acercamiento lento y cierre estable'}];renderScenes();setStatus('Ejemplo de guion cargado.')});
+document.querySelectorAll('[data-type]').forEach(b=>b.addEventListener('click',()=>{type=b.dataset.type;renderType();setStatus('Tipo de creación: '+type)}));
+$('format').addEventListener('change',()=>$('customFormatWrap').classList.toggle('hidden',$('format').value!=='Personalizado'));
+$('reference').addEventListener('change',e=>{
+ const file=e.target.files&&e.target.files[0];referenceData='';
+ if(!file){$('referencePreview').style.display='none';return}
+ if(!file.type.startsWith('image/')){setStatus('Selecciona un archivo de imagen válido.');return}
+ const reader=new FileReader();reader.onload=()=>{referenceData=String(reader.result||'');$('referencePreview').src=referenceData;$('referencePreview').style.display='block';setStatus('Imagen cargada como referencia visual en esta página.')};reader.onerror=()=>setStatus('No se pudo leer la imagen.');reader.readAsDataURL(file);
+});
+function checked(id){return $(id).checked}
+function makePrompt(){
+ const v=id=>$(id).value.trim();
+ const format=v('format')==='Personalizado'?(v('customFormat')||'formato personalizado'):v('format');
+ const isVideo=type==='Video'||type==='Animación';
+ let p=`OBJETIVO\nCrea ${type==='Publicidad'?'una pieza publicitaria':type==='Imagen'?'una imagen':type==='Video'?'un video':'una animación'} de alta calidad, con instrucciones claras y coherentes.\n\nPLATAFORMA DESTINO\n${v('platform')}. Adapta el lenguaje y los parámetros a las funciones disponibles en esta plataforma; no inventes opciones técnicas incompatibles.\n\nTEMA O SUJETO\n${v('subject')||'[Completar tema o sujeto]'}\n\nACCIÓN O RESULTADO DESEADO\n${v('action')||'[Completar acción o resultado]'}\n\nESCENARIO\n${v('scene')||'Un entorno coherente con el tema, sin elementos que distraigan.'}\n\nDIRECCIÓN VISUAL\nEstilo: ${v('style')}.\nEncuadre/cámara: ${v('shot')}.\nIluminación: ${v('light')}.\nFormato: ${format}.\n`;
+ if(isVideo){
+  p+=`\nDURACIÓN Y MOVIMIENTO\nDuración deseada: ${v('duration')} (ajustar a la duración permitida por la plataforma).\nMovimiento: ${v('motion')}.\nContinuidad: mantener consistentes el sujeto, rostro, proporciones, vestuario, accesorios, escenario y dirección de la luz. Las acciones deben seguir un orden temporal lógico, sin saltos ni cambios involuntarios.\n`;
+  if(scenes.length){p+='\nGUION TEMPORAL POR ESCENAS\n'+scenes.map((s,i)=>`Escena ${i+1} (${s.start||0}–${s.end||'?'} segundos): ${s.description.trim()||'[Describe la acción]'}.${s.camera.trim()?' Cámara/sonido: '+s.camera.trim()+'.':''}`).join('\n')+'\n';}
+ }
+ p+='\nIMAGEN DE REFERENCIA Y CONSISTENCIA\n';
+ if(referenceData)p+='Se ha seleccionado una imagen de referencia en la interfaz. Adjunta también esa imagen en la herramienta de IA de destino cuando sea compatible; este texto por sí solo no transmite el archivo.\n';
+ p+=(checked('keepFace')?'Conservar la identidad facial y los rasgos reconocibles cuando exista referencia. ':'')+(checked('keepClothes')?'Conservar vestuario, colores y accesorios importantes cuando exista referencia. ':'')+(checked('keepScene')?'Mantener el escenario de referencia. ':'')+(checked('noText')?'Evitar texto en pantalla salvo que se solicite expresamente; cualquier texto requerido debe ser breve y legible.':'')+'\n';
+ if(v('referenceNotes'))p+='Indicaciones específicas de referencia: '+v('referenceNotes')+'\n';
+ p+='\nDETALLES ADICIONALES\n'+(v('details')||'Priorizar una composición clara, acabados cuidados y coherencia visual.')+'\n';
+ p+='\nEVITAR\n'+(v('negative')||'Errores visuales, incoherencias y artefactos no deseados.')+'\n';
+ if(v('extra'))p+='\nINSTRUCCIONES EXTRA\n'+v('extra')+'\n';
+ p+='\nIDIOMA\nRedacta las instrucciones en '+v('language')+'. Si se solicita diálogo, especifica claramente quién habla y qué dice.\n\nENTREGA\nProduce el resultado solicitado siguiendo estas prioridades: fidelidad a la idea, coherencia entre todos los detalles, acciones comprensibles y acabado profesional. No añadas elementos importantes que contradigan las instrucciones. Si una función no está disponible en la plataforma seleccionada, usa la alternativa compatible más cercana.';
+ return p;
+}
+$('generate').addEventListener('click',()=>{currentPrompt=makePrompt();$('output').textContent=currentPrompt;setStatus('Prompt generado. Puedes copiarlo, guardarlo o descargarlo.')});
+$('copy').addEventListener('click',async()=>{if(!currentPrompt){setStatus('Primero genera un prompt.');return}try{await navigator.clipboard.writeText(currentPrompt);setStatus('Prompt copiado al portapapeles.')}catch(e){const ta=document.createElement('textarea');ta.value=currentPrompt;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');setStatus('Prompt copiado.')}catch(err){setStatus('No se pudo copiar automáticamente. Mantén pulsado el texto para copiarlo.')}ta.remove()}});
+function saveStore(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(favorites));return true}catch(e){setStatus('El almacenamiento está lleno o bloqueado. Exporta la biblioteca para conservar tus prompts.');return false}}
+function renderFavorites(){
+ const root=$('favorites'),q=$('searchFav').value.trim().toLowerCase();root.innerHTML='';
+ const list=favorites.map((f,i)=>({...f,_i:i})).filter(f=>(f.title+' '+f.type+' '+f.prompt).toLowerCase().includes(q));
+ if(!list.length){root.innerHTML='<div class="empty">No hay favoritos que coincidan. Genera un prompt y pulsa “Guardar en favoritos”.</div>';return}
+ list.forEach(f=>{const el=document.createElement('div');el.className='fav';el.innerHTML=`<div class="fav-title">${esc(f.title)}</div><div class="fav-meta">${esc(f.type)} · ${esc(f.platform||'Universal')} · ${esc(f.date||'')}</div><div class="fav-actions"><button class="primary small" data-load="${f._i}">Abrir</button><button class="secondary small" data-copyfav="${f._i}">Copiar</button><button class="danger small" data-delete="${f._i}">Eliminar</button></div>`;root.appendChild(el)});
+}
+$('favorites').addEventListener('click',async e=>{
+ const load=e.target.dataset.load,copy=e.target.dataset.copyfav,del=e.target.dataset.delete;
+ if(load!==undefined){const f=favorites[Number(load)];if(f){currentPrompt=f.prompt;$('output').textContent=f.prompt;setStatus('Favorito cargado en el panel de resultado.');window.scrollTo({top:$('output').getBoundingClientRect().top+window.scrollY-20,behavior:'smooth'})}}
+ if(copy!==undefined){const f=favorites[Number(copy)];if(f){try{await navigator.clipboard.writeText(f.prompt);setStatus('Favorito copiado.')}catch(err){setStatus('No se pudo copiar automáticamente. Abre el favorito y copia el texto.')}}}
+ if(del!==undefined){const f=favorites[Number(del)];if(f&&confirm('¿Eliminar “'+f.title+'” de favoritos?')){favorites.splice(Number(del),1);saveStore();renderFavorites();setStatus('Favorito eliminado.')}}
+});
+$('searchFav').addEventListener('input',renderFavorites);
+$('save').addEventListener('click',()=>{
+ if(!currentPrompt){setStatus('Primero genera un prompt.');return}
+ const title=prompt('Ponle un nombre a este prompt:',($('subject').value.trim()||type).slice(0,70));if(title===null)return;
+ favorites.unshift({title:title.trim()||type,type,platform:$('platform').value,prompt:currentPrompt,date:new Date().toLocaleDateString('es-MX')});
+ if(saveStore()){renderFavorites();setStatus('Guardado en favoritos de este dispositivo.')}
+});
+function download(name,content,mime){const blob=new Blob([content],{type:mime});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+$('download').addEventListener('click',()=>{if(!currentPrompt){setStatus('Primero genera un prompt.');return}download('LC-Prompt-Studio.txt',currentPrompt,'text/plain;charset=utf-8');setStatus('Se solicitó la descarga del archivo .txt.')});
+$('exportFav').addEventListener('click',()=>{download('LC-Prompt-Studio-biblioteca.json',JSON.stringify(favorites,null,2),'application/json;charset=utf-8');setStatus('Biblioteca exportada como JSON.')});
+$('importFavButton').addEventListener('click',()=>$('importFav').click());
+$('importFav').addEventListener('change',async e=>{
+ const file=e.target.files&&e.target.files[0];if(!file)return;
+ try{const parsed=JSON.parse(await file.text());if(!Array.isArray(parsed))throw new Error('Formato incorrecto');const valid=parsed.filter(x=>x&&typeof x.title==='string'&&typeof x.prompt==='string');if(!valid.length)throw new Error('No se encontraron prompts válidos');favorites=[...valid,...favorites].slice(0,500);saveStore();renderFavorites();setStatus('Biblioteca importada. Se añadieron '+valid.length+' prompts.')}catch(err){setStatus('No se pudo importar. Selecciona un JSON exportado desde LC Prompt Studio.')}e.target.value='';
+});
+$('clear').addEventListener('click',()=>{if(!confirm('¿Limpiar los campos del formulario? Los favoritos guardados no se borrarán.'))return;fields.forEach(id=>{const el=$(id);if(el)el.value=''});$('platform').value='Universal';$('language').value='Español';$('style').value='Cinematográfico realista';$('format').selectedIndex=0;$('shot').value='Plano medio';$('light').value='Luz cinematográfica';$('duration').value='10 segundos';$('motion').selectedIndex=0;$('negative').value='Deformaciones, anatomía incorrecta, extremidades adicionales, rostro inconsistente, parpadeos, objetos que cambian de forma, desenfoque no deseado y texto ilegible.';['keepFace','keepClothes','noText'].forEach(id=>$(id).checked=true);$('keepScene').checked=false;$('reference').value='';$('referencePreview').style.display='none';referenceData='';type='Imagen';renderType();scenes=[];renderScenes();currentPrompt='';$('output').textContent='Completa tu idea y pulsa “Generar prompt”. El resultado aparecerá aquí.';setStatus('Formulario limpio. Tus favoritos siguen guardados.')});
+renderType();renderScenes();renderFavorites();
+})();
+</script>
+</body>
+</html>
