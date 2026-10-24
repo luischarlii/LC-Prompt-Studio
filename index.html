@@ -87,6 +87,10 @@ main{padding:16px;display:grid;gap:16px}.card{background:var(--card);border:1px 
 <div id="output" class="output" aria-live="polite">Completa tu idea y pulsa “Generar prompt”. El resultado aparecerá aquí.</div>
 <div class="actions"><button class="green" id="copy">Copiar prompt</button><button class="secondary" id="save">☆ Guardar en favoritos</button><button class="secondary" id="download">Descargar .txt</button></div>
 <button class="primary" id="improveGemini">
+
+<div class="cf-turnstile" data-sitekey="0x4AAAAAAFi3hJ4Xc4Yb05gz" data-theme="light"></div>
+
+
   ✨ Mejorar con Gemini
 </button>
 <div id="status" class="status" role="status"></div>
@@ -330,10 +334,14 @@ $('improveGemini').addEventListener('click', async () => {
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        prompt: original
-      })
-    });
+
+body: JSON.stringify({
+  prompt: original,
+  turnstileToken:
+    document.querySelector(
+      '[name="cf-turnstile-response"]'
+    )?.value || ''
+})
 
     const data = await response.json();
 
