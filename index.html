@@ -6,26 +6,6 @@
 <meta name="theme-color" content="#102a43">
 <meta name="description" content="LC Prompt Studio: crea, organiza y copia prompts para imágenes, videos, animaciones y publicidad.">
 <title>LC Prompt Studio</title>
-<script>
-// Callbacks de Cloudflare Turnstile (modo automático/implícito).
-window.lcTurnstileToken = '';
-window.lcTurnstileSuccess = function(token) {
-  window.lcTurnstileToken = token || '';
-  const status = document.getElementById('status');
-  if (status) status.textContent = window.lcTurnstileToken ? 'Verificación completada. Ya puedes mejorar con Gemini.' : '';
-};
-window.lcTurnstileExpired = function() {
-  window.lcTurnstileToken = '';
-  const status = document.getElementById('status');
-  if (status) status.textContent = 'La verificación expiró. Vuelve a completarla.';
-};
-window.lcTurnstileError = function() {
-  window.lcTurnstileToken = '';
-  const status = document.getElementById('status');
-  if (status) status.textContent = 'Cloudflare no pudo cargar la verificación. Recarga la página e inténtalo de nuevo.';
-};
-</script>
-<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <style>
 :root{--bg:#f3f7fb;--card:#fff;--ink:#102a43;--muted:#526579;--blue:#1769e0;--green:#12805c;--line:#d8e2ee;--soft:#eaf2ff;--danger:#b42318}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.45}
@@ -81,6 +61,19 @@ main{padding:16px;display:grid;gap:16px}.card{background:var(--card);border:1px 
 
 <section class="card">
 <h2>4. Ajustes finales</h2>
+
+<div class="field" style="margin-bottom:14px">
+  <label for="directorMode">Modo de dirección creativa</label>
+  <select id="directorMode">
+    <option value="director">Director creativo — detallado</option>
+    <option value="cinematic">Director cinematográfico</option>
+    <option value="faithful">Fidelidad máxima a la referencia</option>
+  </select>
+  <p class="hint">
+    Elige cómo quieres que el motor local interprete y desarrolle tu idea.
+  </p>
+</div>
+
 <div class="field"><label for="negative">Qué debe evitar la IA</label><textarea id="negative">Deformaciones, anatomía incorrecta, extremidades adicionales, rostro inconsistente, parpadeos, objetos que cambian de forma, desenfoque no deseado y texto ilegible.</textarea></div>
 <div class="field" style="margin-top:12px"><label for="extra">Instrucciones finales opcionales</label><textarea id="extra" placeholder="Ej.: sin marcas de agua, calidad alta, composición limpia, respetar las políticas de la plataforma..."></textarea></div>
 <div class="actions"><button class="primary" id="generate">✨ Generar prompt</button><button class="secondary" id="clear">Limpiar formulario</button></div>
@@ -90,8 +83,6 @@ main{padding:16px;display:grid;gap:16px}.card{background:var(--card);border:1px 
 <h2>5. Tu prompt listo para copiar</h2>
 <div id="output" class="output" aria-live="polite">Completa tu idea y pulsa “Generar prompt”. El resultado aparecerá aquí.</div>
 <div class="actions"><button class="green" id="copy">Copiar prompt</button><button class="secondary" id="save">☆ Guardar en favoritos</button><button class="secondary" id="download">Descargar .txt</button></div>
-<div class="field" style="margin-top:14px"><label>Verificación de seguridad</label><div class="cf-turnstile" data-sitekey="0x4AAAAAAFi3hJ4Xc4Yb05gz" data-theme="light" data-callback="lcTurnstileSuccess" data-expired-callback="lcTurnstileExpired" data-error-callback="lcTurnstileError"></div><p class="hint">Completa la verificación de Cloudflare antes de solicitar una mejora con Gemini.</p></div>
-<div class="actions"><button class="primary" id="improveGemini" type="button">✨ Mejorar con Gemini</button></div>
 <div id="status" class="status" role="status"></div>
 </section>
 
@@ -116,7 +107,18 @@ function safeRead(){try{const x=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[
 favorites=safeRead();
 function setStatus(msg){$('status').textContent=msg}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function renderType(){document.querySelectorAll('[data-type]').forEach(b=>b.classList.toggle('active',b.dataset.type===type));$('timelineCard').classList.toggle('hidden',!(type==='Video'||type==='Animación'));$('duration').disabled=!(type==='Video'||type==='Animación');$('motion').disabled=!(type==='Video'||type==='Animación')}
+
+function renderType(){
+  document.querySelectorAll('[data-type]').forEach(b=>{
+    b.classList.toggle('active',b.dataset.type===type);
+  });
+  $('timelineCard').classList.toggle(
+    'hidden', !(type==='Video'||type==='Animación')
+  );
+  $('duration').disabled=!(type==='Video'||type==='Animación');
+  $('motion').disabled=!(type==='Video'||type==='Animación');
+}
+
 function renderScenes(){
  const root=$('timeline');root.innerHTML='';
  if(!scenes.length){root.innerHTML='<p class="empty">Aún no hay escenas. Añade una para definir qué ocurre en cada momento.</p>';return}
@@ -139,45 +141,161 @@ $('reference').addEventListener('change',e=>{
  const reader=new FileReader();reader.onload=()=>{referenceData=String(reader.result||'');$('referencePreview').src=referenceData;$('referencePreview').style.display='block';setStatus('Imagen cargada como referencia visual en esta página.')};reader.onerror=()=>setStatus('No se pudo leer la imagen.');reader.readAsDataURL(file);
 });
 function checked(id){return $(id).checked}
+
 function makePrompt(){
- const v=id=>$(id).value.trim();
- const format=v('format')==='Personalizado'?(v('customFormat')||'formato personalizado'):v('format');
- const isVideo=type==='Video'||type==='Animación';
- let p=`OBJETIVO\nCrea ${type==='Publicidad'?'una pieza publicitaria':type==='Imagen'?'una imagen':type==='Video'?'un video':'una animación'} de alta calidad, con instrucciones claras y coherentes.\n\nPLATAFORMA DESTINO\n${v('platform')}. Adapta el lenguaje y los parámetros a las funciones disponibles en esta plataforma; no inventes opciones técnicas incompatibles.\n\nTEMA O SUJETO\n${v('subject')||'[Completar tema o sujeto]'}\n\nACCIÓN O RESULTADO DESEADO\n${v('action')||'[Completar acción o resultado]'}\n\nESCENARIO\n${v('scene')||'Un entorno coherente con el tema, sin elementos que distraigan.'}\n\nDIRECCIÓN VISUAL\nEstilo: ${v('style')}.\nEncuadre/cámara: ${v('shot')}.\nIluminación: ${v('light')}.\nFormato: ${format}.\n`;
- if(isVideo){
-  p+=`\nDURACIÓN Y MOVIMIENTO\nDuración deseada: ${v('duration')} (ajustar a la duración permitida por la plataforma).\nMovimiento: ${v('motion')}.\nContinuidad: mantener consistentes el sujeto, rostro, proporciones, vestuario, accesorios, escenario y dirección de la luz. Las acciones deben seguir un orden temporal lógico, sin saltos ni cambios involuntarios.\n`;
-  if(scenes.length){p+='\nGUION TEMPORAL POR ESCENAS\n'+scenes.map((s,i)=>`Escena ${i+1} (${s.start||0}–${s.end||'?'} segundos): ${s.description.trim()||'[Describe la acción]'}.${s.camera.trim()?' Cámara/sonido: '+s.camera.trim()+'.':''}`).join('\n')+'\n';}
- }
- p+='\nIMAGEN DE REFERENCIA Y CONSISTENCIA\n';
- if(referenceData)p+='Se ha seleccionado una imagen de referencia en la interfaz. Adjunta también esa imagen en la herramienta de IA de destino cuando sea compatible; este texto por sí solo no transmite el archivo.\n';
- p+=(checked('keepFace')?'Conservar la identidad facial y los rasgos reconocibles cuando exista referencia. ':'')+(checked('keepClothes')?'Conservar vestuario, colores y accesorios importantes cuando exista referencia. ':'')+(checked('keepScene')?'Mantener el escenario de referencia. ':'')+(checked('noText')?'Evitar texto en pantalla salvo que se solicite expresamente; cualquier texto requerido debe ser breve y legible.':'')+'\n';
- if(v('referenceNotes'))p+='Indicaciones específicas de referencia: '+v('referenceNotes')+'\n';
- p+='\nDETALLES ADICIONALES\n'+(v('details')||'Priorizar una composición clara, acabados cuidados y coherencia visual.')+'\n';
- p+='\nEVITAR\n'+(v('negative')||'Errores visuales, incoherencias y artefactos no deseados.')+'\n';
- if(v('extra'))p+='\nINSTRUCCIONES EXTRA\n'+v('extra')+'\n';
- p+='\nIDIOMA\nRedacta las instrucciones en '+v('language')+'. Si se solicita diálogo, especifica claramente quién habla y qué dice.\n\nENTREGA\nProduce el resultado solicitado siguiendo estas prioridades: fidelidad a la idea, coherencia entre todos los detalles, acciones comprensibles y acabado profesional. No añadas elementos importantes que contradigan las instrucciones. Si una función no está disponible en la plataforma seleccionada, usa la alternativa compatible más cercana.';
- return p;
+  const v=id=>$(id).value.trim();
+  const selectedMode=$('directorMode')?.value||'director';
+  const format=v('format')==='Personalizado'
+    ?(v('customFormat')||'formato personalizado')
+    :v('format');
+
+  const isVideo=type==='Video'||type==='Animación';
+  const isAd=type==='Publicidad';
+  const subject=v('subject')||'[Define el sujeto principal]';
+  const action=v('action')||'[Define la acción principal]';
+  const scene=v('scene')||'un entorno visual coherente con el sujeto';
+  const style=v('style');
+  const shot=v('shot');
+  const light=v('light');
+
+  const direction={
+    director:
+      'Actúa como director creativo profesional. Interpreta la intención del usuario, resuelve detalles visuales secundarios con criterio y prioriza una composición clara, atractiva y coherente. No cambies la idea principal.',
+    cinematic:
+      'Actúa como director de fotografía y director cinematográfico. Define jerarquía visual, profundidad, perspectiva, iluminación, movimiento de cámara y composición. Cada decisión visual debe reforzar la emoción y la acción principal, sin distraer del sujeto.',
+    faithful:
+      'Actúa como supervisor de continuidad visual. Prioriza la fidelidad a las instrucciones y a la imagen de referencia. No inventes cambios en la identidad, el rostro, el vestuario, los accesorios, los colores ni el diseño del sujeto cuando se haya pedido conservarlos.'
+  }[selectedMode];
+
+  let p=`DIRECCIÓN CREATIVA
+${direction}
+
+OBJETIVO
+Crea ${isAd?'una pieza publicitaria profesional':type==='Imagen'?'una imagen':type==='Video'?'un video':'una animación'} terminada, visualmente coherente y fiel a la intención descrita. Convierte cada instrucción en decisiones visuales concretas. No te limites a repetir el texto de entrada.
+
+SUJETO PRINCIPAL
+${subject}
+
+ACCIÓN PRINCIPAL
+${action}
+
+ESCENARIO
+${scene}
+
+DIRECCIÓN DE ARTE
+Estilo visual: ${style}.
+Encuadre: ${shot}.
+Iluminación: ${light}.
+Formato de salida: ${format}.
+Plataforma de destino: ${v('platform')}.
+Idioma solicitado: ${v('language')}.
+
+COMPOSICIÓN Y COHERENCIA
+El sujeto principal debe ser claramente reconocible y tener prioridad visual. Mantén proporciones, perspectiva, escala, sombras y dirección de la luz coherentes. Evita elementos de fondo que compitan con la acción. Los detalles añadidos deben apoyar la idea original, nunca contradecirla.`;
+
+  if(isVideo){
+    p+=`
+
+DIRECCIÓN DE VIDEO
+Duración objetivo: ${v('duration')}.
+Movimiento preferido: ${v('motion')}.
+Planifica la acción con principio, desarrollo y final claramente identificables. El movimiento debe ser continuo y físicamente coherente con la escena. Mantén la identidad, el vestuario, los accesorios, la geometría del sujeto y el entorno estables entre fotogramas. Evita cambios repentinos de apariencia, saltos temporales involuntarios y movimientos de cámara que oculten la acción principal.`;
+
+    if(scenes.length){
+      p+=`
+
+GUION TEMPORAL`;
+      scenes.forEach((s,i)=>{
+        const start=Math.max(0,Number(s.start)||0);
+        const end=Math.max(start,Number(s.end)||start);
+        p+=`
+
+Escena ${i+1} — ${start} a ${end} segundos
+Acción: ${s.description.trim()||'Continuar la acción principal de forma lógica.'}
+${s.camera.trim()?'Cámara o sonido: '+s.camera.trim(): 'Cámara: seguir la acción con un movimiento estable y legible.'}`;
+      });
+      p+=`
+
+CONTINUIDAD ENTRE ESCENAS
+Cada escena debe enlazar naturalmente con la anterior. No reinicies la acción sin motivo. Conserva la posición y orientación del sujeto cuando corresponda y termina con un estado visual definido.`;
+    }else{
+      p+=`
+
+ESTRUCTURA TEMPORAL SUGERIDA
+Inicio: establece el sujeto, el lugar y la situación.
+Desarrollo: muestra la acción principal de forma progresiva y fácil de entender.
+Final: completa la acción y termina con una composición clara.
+Ajusta estas fases a la duración solicitada; no agregues acciones que contradigan la idea.`;
+    }
+  }
+
+  if(isAd){
+    p+=`
+
+DIRECCIÓN PUBLICITARIA
+Presenta el producto o servicio con claridad. Destaca sus características indicadas por el usuario, utiliza una composición atractiva y establece una jerarquía visual profesional. No inventes precios, certificaciones, beneficios ni afirmaciones sobre el producto que no se hayan proporcionado.`;
+  }
+
+  p+=`
+
+IMAGEN DE REFERENCIA Y CONTINUIDAD`;
+
+  if(referenceData){
+    p+=`
+Se ha seleccionado una imagen en la interfaz. Adjunta también el archivo original en la plataforma de destino si admite imágenes de referencia. El texto generado no transmite por sí mismo los datos de esa imagen.`;
+  }
+
+  if(checked('keepFace')){
+    p+=`
+Identidad: conserva el rostro, los rasgos reconocibles y la identidad del sujeto cuando exista una referencia. No sustituyas al personaje por otra persona.`;
+  }
+  if(checked('keepClothes')){
+    p+=`
+Vestuario: conserva la ropa, los colores, los accesorios y los detalles distintivos indicados o visibles en la referencia.`;
+  }
+  if(checked('keepScene')){
+    p+=`
+Escenario: conserva la ubicación y los elementos importantes del fondo de referencia.`;
+  }
+  if(checked('noText')){
+    p+=`
+Texto: no añadas letras, subtítulos, logotipos ni marcas de agua no solicitados. Si el usuario solicita texto, respeta su contenido y legibilidad.`;
+  }
+  if(v('referenceNotes')){
+    p+=`
+
+INSTRUCCIONES ESPECÍFICAS DE REFERENCIA
+${v('referenceNotes')}`;
+  }
+
+  p+=`
+
+DETALLES ADICIONALES
+${v('details')||'Prioriza una imagen limpia, detalles bien definidos y una composición equilibrada.'}
+
+RESTRICCIONES Y ELEMENTOS A EVITAR
+${v('negative')||'Evita deformaciones, incoherencias visuales y artefactos no deseados.'}`;
+
+  if(v('extra')){
+    p+=`
+
+INSTRUCCIONES FINALES DEL USUARIO
+${v('extra')}`;
+  }
+
+  p+=`
+
+ADAPTACIÓN A LA PLATAFORMA
+Redacta el resultado en ${v('language')}. Adapta las instrucciones a las capacidades reales de ${v('platform')||'la plataforma seleccionada'}. No afirmes que se aplicaron parámetros técnicos que la plataforma no admita. Si se requiere diálogo, especifica quién habla y las palabras exactas.
+
+CONTROL DE CALIDAD
+Antes de producir el resultado, comprueba que la acción principal sea clara, que los detalles no se contradigan y que el sujeto permanezca consistente. Prioriza, en este orden: intención original, acción solicitada, continuidad visual y acabado profesional. No inventes cambios importantes ni añadas escenas no solicitadas.`;
+
+  return p;
 }
+
 $('generate').addEventListener('click',()=>{currentPrompt=makePrompt();$('output').textContent=currentPrompt;setStatus('Prompt generado. Puedes copiarlo, guardarlo o descargarlo.')});
 $('copy').addEventListener('click',async()=>{if(!currentPrompt){setStatus('Primero genera un prompt.');return}try{await navigator.clipboard.writeText(currentPrompt);setStatus('Prompt copiado al portapapeles.')}catch(e){const ta=document.createElement('textarea');ta.value=currentPrompt;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');setStatus('Prompt copiado.')}catch(err){setStatus('No se pudo copiar automáticamente. Mantén pulsado el texto para copiarlo.')}ta.remove()}});
-const GEMINI_WORKER_URL='https://lc-prompt-studio-api.paragugliar.workers.dev/';
-$('improveGemini').addEventListener('click',async()=>{
- const button=$('improveGemini');
- if(!currentPrompt){currentPrompt=makePrompt();$('output').textContent=currentPrompt;}
- const original=currentPrompt.trim();
- if(!original){setStatus('Primero escribe tu idea.');return;}
- const turnstileToken=window.lcTurnstileToken || '';
- if(!turnstileToken){setStatus('Completa la verificación de Cloudflare antes de mejorar con Gemini.');return;}
- button.disabled=true;button.textContent='⏳ Mejorando...';setStatus('Gemini está trabajando en tu prompt.');
- try{
-  const response=await fetch(GEMINI_WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:original,turnstileToken})});
-  let data={};try{data=await response.json()}catch(e){throw new Error('El servidor devolvió una respuesta no válida.');}
-  if(!response.ok)throw new Error(data.error||'No se pudo mejorar el prompt.');
-  if(typeof data.text!=='string'||!data.text.trim())throw new Error('Gemini no devolvió un prompt válido.');
-  currentPrompt=data.text.trim();$('output').textContent=currentPrompt;setStatus('¡Prompt mejorado con Gemini! Ya puedes copiarlo o guardarlo.');
- }catch(error){setStatus('No se pudo conectar con Gemini: '+error.message+'. Tu prompt original se conserva.');}
- finally{button.disabled=false;button.textContent='✨ Mejorar con Gemini';window.lcTurnstileToken='';if(window.turnstile){try{window.turnstile.reset()}catch(e){}}}
-});
 function saveStore(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(favorites));return true}catch(e){setStatus('El almacenamiento está lleno o bloqueado. Exporta la biblioteca para conservar tus prompts.');return false}}
 function renderFavorites(){
  const root=$('favorites'),q=$('searchFav').value.trim().toLowerCase();root.innerHTML='';
@@ -204,9 +322,9 @@ $('exportFav').addEventListener('click',()=>{download('LC-Prompt-Studio-bibliote
 $('importFavButton').addEventListener('click',()=>$('importFav').click());
 $('importFav').addEventListener('change',async e=>{
  const file=e.target.files&&e.target.files[0];if(!file)return;
- try{const parsed=JSON.parse(await file.text());if(!Array.isArray(parsed))throw new Error('Formato incorrecto');const valid=parsed.filter(x=>x&&typeof x.title==='string'&&typeof x.prompt==='string');if(!valid.length)throw new Error('No se encontraron prompts válidos');favorites=[...valid,...favorites].slice(0,500);saveStore();renderFavorites();setStatus('Biblioteca importada. Se añadieron '+valid.length+' prompts.')}catch(err){setStatus('No se pudo importar. Selecciona un JSON exportado desde LC Prompt Studio.')}e.target.value='';
+ try{const parsed=JSON.parse(await file.text());if(!Array.isArray(parsed))throw new Error('Formato incorrecto');const valid=parsed.filter(x=>x&&typeof x.title==='string'&&typeof x.prompt==='string');if(!valid.length)throw new Error('No se encontraron prompts válidos');favorites=[...valid,...favorites].slice(0,500);saveStore();renderFavorites();setStatus('Biblioteca importada. Se añadieron '+valid.length+' prompts.')} catch(err){setStatus('No se pudo importar.\nSelecciona un JSON exportado desde LC Prompt Studio.')}e.target.value='';
 });
-$('clear').addEventListener('click',()=>{if(!confirm('¿Limpiar los campos del formulario? Los favoritos guardados no se borrarán.'))return;fields.forEach(id=>{const el=$(id);if(el)el.value=''});$('platform').value='Universal';$('language').value='Español';$('style').value='Cinematográfico realista';$('format').selectedIndex=0;$('shot').value='Plano medio';$('light').value='Luz cinematográfica';$('duration').value='10 segundos';$('motion').selectedIndex=0;$('negative').value='Deformaciones, anatomía incorrecta, extremidades adicionales, rostro inconsistente, parpadeos, objetos que cambian de forma, desenfoque no deseado y texto ilegible.';['keepFace','keepClothes','noText'].forEach(id=>$(id).checked=true);$('keepScene').checked=false;$('reference').value='';$('referencePreview').style.display='none';referenceData='';type='Imagen';renderType();scenes=[];renderScenes();currentPrompt='';$('output').textContent='Completa tu idea y pulsa “Generar prompt”. El resultado aparecerá aquí.';setStatus('Formulario limpio. Tus favoritos siguen guardados.')});
+$('clear').addEventListener('click',()=>{if(!confirm('¿Limpiar los campos del formulario? Los favoritos guardados no se borrarán.'))return;fields.forEach(id=>{const el=$(id);if(el)el.value=''});$('platform').value='Universal';$('language').value='Español';$('style').value='Cinematográfico realista';$('format').selectedIndex=0;$('shot').value='Plano medio';$('light').value='Luz cinematográfica';$('duration').value='10 segundos';$('motion').selectedIndex=0;$('negative').value='Deformaciones, anatomía incorrecta, extremidades adicionales, rostro inconsistente, parpadeos, objetos que cambian de forma, desenfoque no deseado y texto ilegible.';['keepFace','keepClothes','noText'].forEach(id=>$(id).checked=true);$('keepScene').checked=false;$('reference').value='';$('referencePreview').style.display='none';referenceData='';type='Imagen';renderType();scenes=[];renderScenes();currentPrompt='';$('output').textContent='Completa tu idea y pulsa “Generar prompt”.\nEl resultado aparecerá aquí.';setStatus('Formulario limpio. Tus favoritos siguen guardados.')});
 renderType();renderScenes();renderFavorites();
 })();
 </script>
