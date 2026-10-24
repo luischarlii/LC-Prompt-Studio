@@ -6,6 +6,25 @@
 <meta name="theme-color" content="#102a43">
 <meta name="description" content="LC Prompt Studio: crea, organiza y copia prompts para imágenes, videos, animaciones y publicidad.">
 <title>LC Prompt Studio</title>
+<script>
+// Callbacks de Cloudflare Turnstile (modo automático/implícito).
+window.lcTurnstileToken = '';
+window.lcTurnstileSuccess = function(token) {
+  window.lcTurnstileToken = token || '';
+  const status = document.getElementById('status');
+  if (status) status.textContent = window.lcTurnstileToken ? 'Verificación completada. Ya puedes mejorar con Gemini.' : '';
+};
+window.lcTurnstileExpired = function() {
+  window.lcTurnstileToken = '';
+  const status = document.getElementById('status');
+  if (status) status.textContent = 'La verificación expiró. Vuelve a completarla.';
+};
+window.lcTurnstileError = function() {
+  window.lcTurnstileToken = '';
+  const status = document.getElementById('status');
+  if (status) status.textContent = 'Cloudflare no pudo cargar la verificación. Recarga la página e inténtalo de nuevo.';
+};
+</script>
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <style>
 :root{--bg:#f3f7fb;--card:#fff;--ink:#102a43;--muted:#526579;--blue:#1769e0;--green:#12805c;--line:#d8e2ee;--soft:#eaf2ff;--danger:#b42318}
@@ -71,7 +90,7 @@ main{padding:16px;display:grid;gap:16px}.card{background:var(--card);border:1px 
 <h2>5. Tu prompt listo para copiar</h2>
 <div id="output" class="output" aria-live="polite">Completa tu idea y pulsa “Generar prompt”. El resultado aparecerá aquí.</div>
 <div class="actions"><button class="green" id="copy">Copiar prompt</button><button class="secondary" id="save">☆ Guardar en favoritos</button><button class="secondary" id="download">Descargar .txt</button></div>
-<div class="field" style="margin-top:14px"><label>Verificación de seguridad</label><div class="cf-turnstile" data-sitekey="0x4AAAAAAFi3hJ4Xc4Yb05gz" data-theme="light"></div><p class="hint">Completa la verificación de Cloudflare antes de solicitar una mejora con Gemini.</p></div>
+<div class="field" style="margin-top:14px"><label>Verificación de seguridad</label><div class="cf-turnstile" data-sitekey="0x4AAAAAAFi3hJ4Xc4Yb05gz" data-theme="light" data-callback="lcTurnstileSuccess" data-expired-callback="lcTurnstileExpired" data-error-callback="lcTurnstileError"></div><p class="hint">Completa la verificación de Cloudflare antes de solicitar una mejora con Gemini.</p></div>
 <div class="actions"><button class="primary" id="improveGemini" type="button">✨ Mejorar con Gemini</button></div>
 <div id="status" class="status" role="status"></div>
 </section>
@@ -147,8 +166,7 @@ $('improveGemini').addEventListener('click',async()=>{
  if(!currentPrompt){currentPrompt=makePrompt();$('output').textContent=currentPrompt;}
  const original=currentPrompt.trim();
  if(!original){setStatus('Primero escribe tu idea.');return;}
- const tokenInput=document.querySelector('[name="cf-turnstile-response"]');
- const turnstileToken=tokenInput?tokenInput.value:'';
+ const turnstileToken=window.lcTurnstileToken || '';
  if(!turnstileToken){setStatus('Completa la verificación de Cloudflare antes de mejorar con Gemini.');return;}
  button.disabled=true;button.textContent='⏳ Mejorando...';setStatus('Gemini está trabajando en tu prompt.');
  try{
@@ -158,7 +176,7 @@ $('improveGemini').addEventListener('click',async()=>{
   if(typeof data.text!=='string'||!data.text.trim())throw new Error('Gemini no devolvió un prompt válido.');
   currentPrompt=data.text.trim();$('output').textContent=currentPrompt;setStatus('¡Prompt mejorado con Gemini! Ya puedes copiarlo o guardarlo.');
  }catch(error){setStatus('No se pudo conectar con Gemini: '+error.message+'. Tu prompt original se conserva.');}
- finally{button.disabled=false;button.textContent='✨ Mejorar con Gemini';if(window.turnstile){try{window.turnstile.reset()}catch(e){}}}
+ finally{button.disabled=false;button.textContent='✨ Mejorar con Gemini';window.lcTurnstileToken='';if(window.turnstile){try{window.turnstile.reset()}catch(e){}}}
 });
 function saveStore(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(favorites));return true}catch(e){setStatus('El almacenamiento está lleno o bloqueado. Exporta la biblioteca para conservar tus prompts.');return false}}
 function renderFavorites(){
