@@ -334,10 +334,14 @@ $('improveGemini').addEventListener('click', async () => {
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        prompt: original
-      })
-    });
+      
+body: JSON.stringify({
+  prompt: original,
+  turnstileToken: document.querySelector(
+    '[name="cf-turnstile-response"]'
+  )?.value || ''
+})
+
 
     const data = await response.json();
 
