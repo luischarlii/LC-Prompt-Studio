@@ -401,5 +401,27 @@ $('clear').addEventListener('click',()=>{if(!confirm('¿Limpiar los campos del f
 renderType();renderScenes();renderFavorites();
 })();
 </script>
+<script>
+  window.lcTurnstileError = function (codigo) {
+    let mensaje = document.getElementById("lc-turnstile-error");
+
+    if (!mensaje) {
+      mensaje = document.createElement("p");
+      mensaje.id = "lc-turnstile-error";
+      mensaje.style.cssText =
+        "color:#b91c1c;background:#fee2e2;padding:12px;border-radius:8px;";
+      const widget = document.querySelector(".cf-turnstile");
+
+      if (widget) {
+        widget.insertAdjacentElement("afterend", mensaje);
+      } else {
+        document.body.appendChild(mensaje);
+      }
+    }
+
+    mensaje.textContent =
+      "Error de Turnstile: " + codigo;
+  };
+</script>
 </body>
 </html>
