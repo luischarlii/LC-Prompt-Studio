@@ -88,7 +88,12 @@ main{padding:16px;display:grid;gap:16px}.card{background:var(--card);border:1px 
 <div class="actions"><button class="green" id="copy">Copiar prompt</button><button class="secondary" id="save">☆ Guardar en favoritos</button><button class="secondary" id="download">Descargar .txt</button></div>
 <button class="primary" id="improveGemini">
 
-<div class="cf-turnstile" data-sitekey="0x4AAAAAAFi3hJ4Xc4Yb05gZ" data-theme="light"></div>
+<div class="cf-turnstile" data-sitekey="0x4AAAAAAFi3hJ4Xc4Yb05gZ"
+  data-theme="light"
+  data-callback="lcTurnstileSuccess"
+  data-expired-callback="lcTurnstileExpired"
+  data-error-callback="lcTurnstileError"
+></div>
 
 
   ✨ Mejorar con Gemini
@@ -329,14 +334,20 @@ $('improveGemini').addEventListener('click', async () => {
   setStatus('Gemini está trabajando en tu prompt.');
 
   try {
+if (!window.lcTurnstileToken) {
+  throw new Error(
+    "Primero completa la verificación de Turnstile."
+  );
+}
     const response = await fetch(GEMINI_WORKER_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        prompt: original
-      })
+  prompt: original,
+  token: window.lcTurnstileToken
+})
     });
 
     const data = await response.json();
@@ -422,6 +433,15 @@ renderType();renderScenes();renderFavorites();
     mensaje.textContent =
       "Error de Turnstile: " + codigo;
   };
+window.lcTurnstileToken = "";
+
+window.lcTurnstileSuccess = function (token) {
+  window.lcTurnstileToken = token;
+};
+
+window.lcTurnstileExpired = function () {
+  window.lcTurnstileToken = "";
+};
 </script>
 </body>
 </html>
