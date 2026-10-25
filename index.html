@@ -439,6 +439,7 @@ window.lcTurnstileToken = "";
 
 window.lcTurnstileSuccess = function (token) {
   window.lcTurnstileToken = token;
+  console.log("Turnstile verificado:", !!token);
 };
 
 window.lcTurnstileExpired = function () {
