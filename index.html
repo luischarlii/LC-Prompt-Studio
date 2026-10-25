@@ -344,10 +344,12 @@ if (!window.lcTurnstileToken) {
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
+      
+body: JSON.stringify({
   prompt: original,
-  token: window.lcTurnstileToken
+  turnstileToken: window.lcTurnstileToken
 })
+
     });
 
     const data = await response.json();
