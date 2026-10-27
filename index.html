@@ -19,31 +19,6 @@ main{padding:16px;display:grid;gap:16px}.card{background:var(--card);border:1px 
 </head>
 <body>
 <header><div class="wrap"><div class="brand"><span class="brand-mark">LC</span> LC CREATIVE TOOLS</div><h1>Prompt Studio</h1><p>Diseña prompts para imágenes, videos, personajes, animaciones y anuncios.</p></div></header>
-<!-- Botón Mercado Pago en la cabecera -->
-<div style="text-align:center; margin:15px auto 20px;">
-  <a href="https://mpago.li/1xwA49D"
-     target="_blank"
-     rel="noopener noreferrer"
-     style="display:inline-flex;
-            align-items:center;
-            justify-content:center;
-            gap:10px;
-            background:#ffffff;
-            color:#009EE3;
-            padding:9px 16px;
-            border:2px solid #009EE3;
-            border-radius:10px;
-            text-decoration:none;
-            font-weight:bold;">
-    <img
-      src="https://cdn.jsdelivr.net/gh/glincker/thesvg@main/public/icons/mercado-pago/default.svg"
-      alt="Mercado Pago"
-      width="32"
-      height="32"
-      style="object-fit:contain;">
-    Apoyar con Mercado Pago
-  </a>
-</div>
 <main>
 <section class="card">
 <h2>1. Elige qué quieres crear</h2>
@@ -113,7 +88,12 @@ main{padding:16px;display:grid;gap:16px}.card{background:var(--card);border:1px 
 <div class="actions"><button class="green" id="copy">Copiar prompt</button><button class="secondary" id="save">☆ Guardar en favoritos</button><button class="secondary" id="download">Descargar .txt</button></div>
 <button class="primary" id="improveGemini">
 
-<div class="cf-turnstile" data-sitekey="0x4AAAAAAFi3hJ4Xc4Yb05gZ" data-theme="light"></div>
+<div class="cf-turnstile" data-sitekey="0x4AAAAAAFi3hJ4Xc4Yb05gZ"
+  data-theme="light"
+  data-callback="lcTurnstileSuccess"
+  data-expired-callback="lcTurnstileExpired"
+  data-error-callback="lcTurnstileError"
+></div>
 
 
   ✨ Mejorar con Gemini
@@ -354,14 +334,20 @@ $('improveGemini').addEventListener('click', async () => {
   setStatus('Gemini está trabajando en tu prompt.');
 
   try {
+if (!window.lcTurnstileToken) {
+  throw new Error(
+    "Primero completa la verificación de Turnstile."
+  );
+}
     const response = await fetch(GEMINI_WORKER_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        prompt: original
-      })
+  prompt: original,
+  token: window.lcTurnstileToken
+})
     });
 
     const data = await response.json();
@@ -425,6 +411,37 @@ $('importFav').addEventListener('change',async e=>{
 $('clear').addEventListener('click',()=>{if(!confirm('¿Limpiar los campos del formulario? Los favoritos guardados no se borrarán.'))return;fields.forEach(id=>{const el=$(id);if(el)el.value=''});$('platform').value='Universal';$('language').value='Español';$('style').value='Cinematográfico realista';$('format').selectedIndex=0;$('shot').value='Plano medio';$('light').value='Luz cinematográfica';$('duration').value='10 segundos';$('motion').selectedIndex=0;$('negative').value='Deformaciones, anatomía incorrecta, extremidades adicionales, rostro inconsistente, parpadeos, objetos que cambian de forma, desenfoque no deseado y texto ilegible.';['keepFace','keepClothes','noText'].forEach(id=>$(id).checked=true);$('keepScene').checked=false;$('reference').value='';$('referencePreview').style.display='none';referenceData='';type='Imagen';renderType();scenes=[];renderScenes();currentPrompt='';$('output').textContent='Completa tu idea y pulsa “Generar prompt”.\nEl resultado aparecerá aquí.';setStatus('Formulario limpio. Tus favoritos siguen guardados.')});
 renderType();renderScenes();renderFavorites();
 })();
+</script>
+<script>
+  window.lcTurnstileError = function (codigo) {
+    let mensaje = document.getElementById("lc-turnstile-error");
+
+    if (!mensaje) {
+      mensaje = document.createElement("p");
+      mensaje.id = "lc-turnstile-error";
+      mensaje.style.cssText =
+        "color:#b91c1c;background:#fee2e2;padding:12px;border-radius:8px;";
+      const widget = document.querySelector(".cf-turnstile");
+
+      if (widget) {
+        widget.insertAdjacentElement("afterend", mensaje);
+      } else {
+        document.body.appendChild(mensaje);
+      }
+    }
+
+    mensaje.textContent =
+      "Error de Turnstile: " + codigo;
+  };
+window.lcTurnstileToken = "";
+
+window.lcTurnstileSuccess = function (token) {
+  window.lcTurnstileToken = token;
+};
+
+window.lcTurnstileExpired = function () {
+  window.lcTurnstileToken = "";
+};
 </script>
 </body>
 </html>
