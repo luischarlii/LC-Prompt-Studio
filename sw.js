@@ -1,5 +1,5 @@
 
-const CACHE_NAME = "lc-prompt-studio-v1";
+const CACHE_NAME = "lc-prompt-studio-v2";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
