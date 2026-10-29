@@ -2,7 +2,7 @@
 {
   "id": "./",
   "name": "LC Prompt Studio",
-  "short_name": "LC Prompts",
+  "short_name": "LC Prompt Studio",
   "description": "Generador de prompts para imágenes, videos y animaciones con inteligencia artificial.",
   "start_url": "./",
   "scope": "./",
